@@ -1,0 +1,94 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "conntracker"
+authors = [
+    { name = "Aurélien Chick", email = "aurelien.chick@gmail.com" },
+]
+description = "A socket connection tracker."
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = [
+    "socket",
+    "monitor",
+    "monitoring",
+    "network",
+    "networking",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: System :: Monitoring",
+    "Topic :: System :: Networking",
+    "Topic :: System :: Networking :: Monitoring",
+    "Topic :: Utilities",
+]
+license = { file = "LICENSE.txt" }
+dynamic = ["version", "dependencies"]
+
+[project.scripts]
+conntracker = "conntracker.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/aachick/conntracker"
+Issues = "https://github.com/aachick/conntracker/issues"
+
+[tool.setuptools]
+packages = ["conntracker"]
+package-dir = { "" = "src" }
+
+[tool.setuptools.dynamic]
+version = { attr = "conntracker.__about__.__version__" }
+dependencies = { file = "requirements.txt" }
+optional-dependencies = { dev = { file = "requirements-dev.txt" } }
+
+[tool.black]
+target-versions = ["py38", "py39", "py310", "py311"]
+line-length = 120
+
+[tool.mypy]
+files = ["src/conntracker"]
+python_version = "3.8"
+strict = true
+warn_unused_ignores = false
+
+[tool.ruff]
+target-version = "py38"
+line-length = 120
+include = [
+    "A",    # flake8-builtins
+    "D",    # pydocstyle
+    "E",    # pycodestyle (errors)
+    "EM",   # flake8-errmsg
+    "F",    # pyflakes
+    "I",    # isort
+    "RUF",  # ruff-specific
+    "W",    # pycodestyle (warnings)
+]
+
+[tool.ruff.per-file-ignores]
+"*/__init__.py" = ["F401"]
+
+[tool.ruff.isort]
+lines-after-imports = 2
+lines-between-types = 1
+
+[tool.ruff.pydocstyle]
+convention = "numpy"
+
+[tool.pytest]
+addopts = "--color=yes"
