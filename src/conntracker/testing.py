@@ -6,11 +6,10 @@ import sys
 import time
 
 from multiprocessing.synchronize import Event
-from typing import Iterator, List, Optional, Tuple, Union, cast
-from warnings import WarningMessage, catch_warnings
+from typing import Iterator, Tuple, cast
 
 
-def warnings_catcher() -> Union[catch_warnings[Optional[List[WarningMessage]]], contextlib.nullcontext[None]]:
+def warnings_catcher():  # type: ignore
     """Return a custom warnings catcher based on the platform."""
     warnings = (UserWarning,) if sys.platform == "darwin" else ()
     if warnings:
