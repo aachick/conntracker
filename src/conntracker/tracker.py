@@ -11,7 +11,7 @@ from collections import defaultdict
 from contextlib import suppress
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Callable, DefaultDict, Optional, Set, TextIO, Type, TypeVar, Union
+from typing import Any, Callable, DefaultDict, Optional, Set, TextIO, Tuple, Type, TypeVar, Union
 
 import psutil
 
@@ -29,7 +29,7 @@ def warn_if_not_privileged() -> None:
         )
 
 
-def _format_addr(addr: psutil._common.addr, show_alias: bool) -> str:
+def _format_addr(addr: Union[psutil._common.addr, Tuple[()]], show_alias: bool) -> str:
     if len(addr) == 2:
         ip, port = addr[0], addr[1] # type: ignore
         try:
@@ -52,7 +52,7 @@ def _format_addr(addr: psutil._common.addr, show_alias: bool) -> str:
 def _get_termwidth() -> int:
     try:
         columns, _ = os.get_terminal_size()
-    except OSError:  # could happend if stdout is redirected.
+    except OSError:  # could happen if stdout is redirected.
         columns = 79
     return columns
 
@@ -165,12 +165,12 @@ class ConnTracker:
 
 
 def trackconn(
-    func: Callable[..., RT],
+    func: Optional[Callable[..., RT]] = None,
     *,
     stream: Optional[Union[str, Path, TextIO]] = None,
     interval: Optional[float] = None,
     track_children: bool = True,
-) -> Callable[..., RT]:
+):
     """
     Decorate a function to monitor all of the connections it makes.
 
@@ -185,21 +185,26 @@ def trackconn(
         Whether or not to track connections opened by child processes.
     """
 
-    @functools.wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> RT:
-        tracer = ConnTracker(interval=interval, track_children=track_children)
-        with tracer:
-            retval = func(*args, **kwargs)
+    def inner(func: Callable[..., RT]):
+        @functools.wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> RT:
+            tracer = ConnTracker(interval=interval, track_children=track_children)
+            with tracer:
+                retval = func(*args, **kwargs)
 
-        nonlocal stream
-        if isinstance(stream, (str, Path)):
-            with open(stream, "w", encoding="utf-8") as out:
-                out.write(repr(tracer))
-        else:
-            if stream is None:
-                stream = sys.stdout
-            stream.write(repr(tracer))
+            nonlocal stream
+            if isinstance(stream, (str, Path)):
+                with open(stream, "w", encoding="utf-8") as out:
+                    out.write(repr(tracer))
+            else:
+                if stream is None:
+                    stream = sys.stdout
+                stream.write(repr(tracer))
 
-        return retval
+            return retval
 
-    return wrapper
+        return wrapper
+
+    if func is None:
+        return inner
+    return inner(func)
