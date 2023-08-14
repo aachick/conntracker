@@ -1,6 +1,5 @@
 """CLI functionalitiy."""
 import argparse
-import shlex
 import subprocess as sp
 import sys
 
@@ -52,9 +51,8 @@ def main(args: Optional[Sequence[str]] = None) -> None:
     prog: List[str] = arg_values.program
     if len(prog) < 1:
         parser.exit(status=1, message="No program was given to execute.")
-    prog_str = shlex.join(prog)
 
-    with sp.Popen(prog_str if sys.platform == "win32" else prog) as pipe:
+    with sp.Popen(prog) as pipe:
         tracker = ConnTracker(pid=pipe.pid, track_children=not arg_values.ignore_children)
         retval: Optional[int] = None
         with tracker:
