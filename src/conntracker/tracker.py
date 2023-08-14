@@ -1,6 +1,7 @@
 """Track connections opened by functions and/or processes."""
 import functools
 import os
+import socket
 import sys
 import threading
 import time
@@ -26,6 +27,34 @@ def warn_if_not_privileged() -> None:
             category=UserWarning,
             stacklevel=2,
         )
+
+
+def _format_addr(addr: psutil._common.addr, show_alias: bool) -> str:
+    if len(addr) == 2:
+        ip, port = addr[0], addr[1] # type: ignore
+        try:
+            socket.inet_aton(ip)
+            remote_addr = f"{ip}:{port}"
+        except OSError:
+            # ipv6
+            remote_addr = f"[{ip}]:{port}"
+
+        if show_alias:
+            with suppress(socket.gaierror):
+                hostname = socket.getfqdn(ip)
+                remote_addr += f" (alias='{hostname}')"
+    else:
+        remote_addr = "unknown"
+
+    return remote_addr
+
+
+def _get_termwidth() -> int:
+    try:
+        columns, _ = os.get_terminal_size()
+    except OSError:  # could happend if stdout is redirected.
+        columns = 79
+    return columns
 
 
 class ConnTracker:
@@ -87,7 +116,12 @@ class ConnTracker:
             self.monitor.join()
 
     def __repr__(self) -> str:
-        self_repr = f"{self.__class__.__name__} summary:\n"
+        termwidth = _get_termwidth()
+
+        self_repr = f"{'#' * termwidth}\n"
+        header = f"{self.__class__.__name__} summary:"
+        self_repr += f"{header}\n{'-' * len(header)}\n"
+
         for pid, pid_conns in self.connections.items():
             pid_str = f"PID {pid}"
             if pid == self.proc.pid:
@@ -98,18 +132,12 @@ class ConnTracker:
                 for conn in fd_conns:
                     prefix = f"{conn.family.name} - {conn.status}".ljust(25)
 
-                    if len(conn.laddr) == 2:
-                        local_addr = f"{conn.laddr[0]}::{conn.laddr[1]}"  # type: ignore
-                    else:
-                        local_addr = "unknown"
-                    local_addr = local_addr.rjust(46)
-
-                    if len(conn.raddr) == 2:
-                        remote_addr = f"{conn.raddr[0]}::{conn.raddr[1]}"  # type: ignore
-                    else:
-                        remote_addr = "none"
+                    local_addr = _format_addr(conn.laddr, False).rjust(46)
+                    remote_addr = _format_addr(conn.raddr, True)
 
                     self_repr += f"    * {prefix}: {local_addr} -> {remote_addr}\n"
+
+        self_repr += f"{'#' * termwidth}\n"
 
         return self_repr
 
