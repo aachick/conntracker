@@ -7,7 +7,8 @@
 
 Dynamically track socket connections opened by one more processes.
 
-This is by no means a perfect tool but it was kind of fun building.
+This is by no means a perfect tool ([Wireshark](https://github.com/wireshark/wireshark) is better by miles)
+but it was kind of fun building.
 
 ## Installation
 
