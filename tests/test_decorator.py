@@ -9,6 +9,7 @@ from conntracker.testing import echo_server, warnings_catcher
 
 
 def send_stuff(addr: Tuple[str, int]) -> None:
+    """Send unintersting data over a socket for testing."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.connect(addr)
         msg = b"Nothing interesting here."

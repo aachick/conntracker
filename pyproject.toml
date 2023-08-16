@@ -68,7 +68,7 @@ warn_unused_ignores = false
 [tool.ruff]
 target-version = "py38"
 line-length = 120
-include = [
+select = [
     "A",    # flake8-builtins
     "D",    # pydocstyle
     "E",    # pycodestyle (errors)
@@ -77,6 +77,9 @@ include = [
     "I",    # isort
     "RUF",  # ruff-specific
     "W",    # pycodestyle (warnings)
+]
+ignore = [
+    "D105",  # Missing docstring in magic method
 ]
 
 [tool.ruff.per-file-ignores]

@@ -31,7 +31,7 @@ def warn_if_not_privileged() -> None:
 
 def _format_addr(addr: Union[psutil._common.addr, Tuple[()]], show_alias: bool) -> str:
     if len(addr) == 2:
-        ip, port = addr[0], addr[1] # type: ignore
+        ip, port = addr[0], addr[1]  # type: ignore
         try:
             socket.inet_aton(ip)
             remote_addr = f"{ip}:{port}"

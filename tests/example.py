@@ -5,6 +5,7 @@ from conntracker.testing import echo_server
 
 
 def main() -> None:
+    """Entrypoint that will open a socket connection."""
     with echo_server() as addr:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.connect(addr)
